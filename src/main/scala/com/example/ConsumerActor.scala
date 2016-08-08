@@ -1,13 +1,10 @@
 package com.example
 
-import java.time.Instant
-
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.event.LoggingReceive
 import com.example.ConsumerActor._
 
-import scala.collection.{immutable, mutable}
-
+import scala.collection.mutable
 
 
 class ConsumerActor extends Actor with ActorLogging {
@@ -35,8 +32,12 @@ class ConsumerActor extends Actor with ActorLogging {
       order = order + 1
       queue += StoredEvent(e, order)
 
-    case FetchNext(top) =>
-      val result = queue.orderedIter.take(top).toList.sorted
+    case FetchNext(when, top) =>
+      val result = queue.orderedIter
+        .filter(_.origin.when.isBefore(when))
+        .take(top)
+        .toList
+        .sorted
       sender ! FetchNextResult(result.map(_.origin))
 
     case TotalEvents =>
@@ -62,12 +63,6 @@ object ConsumerActor {
 
 case class StoredEvent(origin: Event, storedOrder: Int)
 
-sealed trait Request
-case class Put(e: Event) extends Request
-case class FetchNext(top: Int = 10) extends Request
-case object TotalEvents extends Request
 
-case class FetchNextResult(events: immutable.Seq[Event])
-case class TotalEventsResult(count: Int)
 
-case class Event(when: Instant, action: Action)
+

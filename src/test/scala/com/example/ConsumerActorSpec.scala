@@ -35,7 +35,7 @@ class ConsumerActorSpec extends TestKit(ActorSystem("TestActorSystem", ConfigFac
       consumer ! Put(e3)
       consumer ! Put(e2)
 
-      consumer ! FetchNext()
+      consumer ! FetchNext(Instant.now())
       expectMsg(FetchNextResult(Seq(e1, e3, e2)))
     }
 
@@ -50,7 +50,7 @@ class ConsumerActorSpec extends TestKit(ActorSystem("TestActorSystem", ConfigFac
       consumer ! Put(e2)
       consumer ! Put(e3)
 
-      consumer ! FetchNext()
+      consumer ! FetchNext(Instant.now())
       expectMsg(FetchNextResult(Seq(e3, e1, e2)))
     }
   }
